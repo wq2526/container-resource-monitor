@@ -56,7 +56,7 @@ public class ContainerResourceMonitor {
 		
 		String host = prop.getProperty("kafka.host");
 		String port = prop.getProperty("kafka.port");
-		String topic = prop.getProperty("container.id.topic");
+		String topic = prop.getProperty("container.warning.topic");
 		producer = new KafkaProducerClient<String, String>(host + ":" + port);
 		producer.addTopic(topic);
 		

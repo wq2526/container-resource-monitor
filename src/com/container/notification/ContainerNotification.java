@@ -36,7 +36,7 @@ public class ContainerNotification {
 		String host = prop.getProperty("kafka.host");
 		String port = prop.getProperty("kafka.port");
 		String groupId = prop.getProperty("group.id");
-		String topic = prop.getProperty("container.warning.topic");
+		String topic = prop.getProperty("container.id.topic");
 		
 		consumer = new KafkaConsumerClient<String, String>(host + ":" + port, groupId);
 		consumer.addTopic(topic);
