@@ -21,6 +21,8 @@ public class ContainerNotification {
 	
 	private ContainerResourceMonitor monitor;
 	
+	private String nodeHost;
+	
 	public ContainerNotification(String[] args) {
 		Properties prop = new Properties();
 		InputStream input = ContainerNotification.class.
@@ -33,16 +35,18 @@ public class ContainerNotification {
 			LOG.error("read properties file error", e);
 		}
 		
+		monitor = new ContainerResourceMonitor();
+		nodeHost = monitor.init(args);
+		
 		String host = prop.getProperty("kafka.host");
 		String port = prop.getProperty("kafka.port");
 		String groupId = prop.getProperty("group.id");
 		String topic = prop.getProperty("container.id.topic");
 		
-		consumer = new KafkaConsumerClient<String, String>(host + ":" + port, groupId);
+		consumer = new KafkaConsumerClient<String, String>
+			(host + ":" + port, groupId + "-" + nodeHost);
 		consumer.addTopic(topic);
 		
-		monitor = new ContainerResourceMonitor();
-		monitor.init(args);
 	}
 	
 	public void startNotify() {
@@ -66,10 +70,13 @@ public class ContainerNotification {
 				if(containerIdJson.has("finish")){
 					finish = true;
 					LOG.info("finish the notifier");
+					break;
 				}
-				String containerId = containerIdJson.getString("container_id");
-				LOG.info("start a thread to monitor container " + containerId);
-				monitor.startMonitorThread(containerId);
+				if(containerIdJson.getString("node_host").equals(nodeHost)){
+					String containerId = containerIdJson.getString("container_id");
+					LOG.info("start a thread to monitor container " + containerId);
+					monitor.startMonitorThread(containerId);
+				}	
 			}
 		}
 		

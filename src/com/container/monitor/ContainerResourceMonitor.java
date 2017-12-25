@@ -28,6 +28,8 @@ public class ContainerResourceMonitor {
 	
 	private String appId;
 	private int allocatedMem;
+	private String nodeHost;
+	
 	private Map<String, String> containerPids;
 	
 	private Options opts;
@@ -39,6 +41,8 @@ public class ContainerResourceMonitor {
 	public ContainerResourceMonitor() {
 		appId = "";
 		allocatedMem = 0;
+		nodeHost = "";
+		
 		containerPids = new HashMap<String, String>();
 		runtime = Runtime.getRuntime();
 		
@@ -63,10 +67,11 @@ public class ContainerResourceMonitor {
 		threshold = Integer.parseInt(prop.getProperty("threshold"));
 	}
 	
-	public void init(String[] args) {
+	public String init(String[] args) {
 		
 		opts.addOption("app_id", true, "app id of the containers");
 		opts.addOption("allocated_mem", true, "allocated memory of each container");
+		opts.addOption("node_host", true, "the node host of the monitor");
 		
 		CommandLine cliParser = null;
 		try {
@@ -75,12 +80,18 @@ public class ContainerResourceMonitor {
 			appId = cliParser.getOptionValue("app_id", "");
 			LOG.info("get app id:" + appId);
 			
-			allocatedMem = Integer.parseInt(cliParser.getOptionValue("allocated_mem", "0"));
+			allocatedMem = Integer.parseInt(cliParser.getOptionValue
+					("allocated_mem", "0"));
 			LOG.info("get allocated memory:" + allocatedMem);
+			
+			nodeHost = cliParser.getOptionValue("node_host", "");
+			LOG.info("get node host:" + nodeHost);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			LOG.error("parse command args error", e);
 		}
+		
+		return nodeHost;
 		
 	}
 	
