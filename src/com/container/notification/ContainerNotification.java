@@ -21,7 +21,7 @@ public class ContainerNotification {
 	
 	private ContainerResourceMonitor monitor;
 	
-	public ContainerNotification() {
+	public ContainerNotification(String[] args) {
 		Properties prop = new Properties();
 		InputStream input = ContainerNotification.class.
 				getClassLoader().getResourceAsStream("monitor.properties");
@@ -42,6 +42,7 @@ public class ContainerNotification {
 		consumer.addTopic(topic);
 		
 		monitor = new ContainerResourceMonitor();
+		monitor.init(args);
 	}
 	
 	public void startNotify() {
@@ -85,7 +86,7 @@ public class ContainerNotification {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		ContainerNotification cn = new ContainerNotification();
+		ContainerNotification cn = new ContainerNotification(args);
 		cn.startNotify();
 		
 		cn.stopNotify();
