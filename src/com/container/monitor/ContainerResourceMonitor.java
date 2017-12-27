@@ -102,7 +102,29 @@ public class ContainerResourceMonitor {
 					appId + "/" + containerId + "/" + containerId + ".pid";
 			LOG.info("read container pid from file:" + path);
 			
-			BufferedReader pidBr = new BufferedReader(new FileReader(path));
+			BufferedReader pidBr = null;
+			int tryCount = 3;
+			boolean find = false;
+			while(tryCount!=0){
+				try {
+					pidBr = new BufferedReader(new FileReader(path));
+					find = true;
+					break;
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					Thread.sleep(1000);
+					tryCount--;
+					if(tryCount!=0){
+						LOG.info("pid file not found, try again");
+					}else{
+						LOG.error("cannot find pid file after trying 3 times", e);
+						find = false;
+					}
+					
+				}
+			}
+			
+			if(!find)return;
 			String pid = pidBr.readLine();
 			LOG.info("pid of container " + containerId + " is " + pid);
 			
@@ -122,13 +144,21 @@ public class ContainerResourceMonitor {
 					LOG.info(line);
 					info = line;
 				}
-				
-				String[] infoArray = info.split(" ");
+				String[] infoArray = info.trim().split("\\s+");
 				if(!infoArray[0].equals(pid)){
+					LOG.info("the pid file is not exist, break the while loop");
 					break;
 				}
-				int memUsage = Integer.parseInt(infoArray[5]);
-				int memPercent = Integer.parseInt(infoArray[9]);
+				
+				int memUsage = 0;
+				double memPercent = 0;
+				try {
+					memUsage = Integer.parseInt(infoArray[5]);
+					memPercent = Double.parseDouble(infoArray[9]);
+				} catch (Exception e) {
+					// TODO: handle exception
+					LOG.error("get mem info error", e);
+				}
 				LOG.info("the memory used by container " + containerId + 
 						" with pid " + pid + " is " + memUsage + " -- " + memPercent);
 				
@@ -142,16 +172,13 @@ public class ContainerResourceMonitor {
 							+ "exceeding the threshold:" + msg);
 					producer.produce(containerId, msg);
 					
-					LOG.info("wait 10 seconds for a new container to start");
-					Thread.sleep(10000);
+					LOG.info("break the while loop after send memory percentage exceeding message");
+					break;
 				}
 			}
 
 			pidBr.close();
 			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			LOG.error("pid file not exist", e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			LOG.error("read pid file error", e);

@@ -66,6 +66,7 @@ public class ContainerNotification {
 		for(ConsumerRecord<String, String> record : records){
 			if(record.value()!=null){
 				String containerIdMsg = record.value().toString();
+				LOG.info("receive container id message:" + containerIdMsg);
 				JSONObject containerIdJson = new JSONObject(containerIdMsg);
 				if(containerIdJson.has("finish")){
 					finish = true;
