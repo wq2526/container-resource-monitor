@@ -95,7 +95,7 @@ public class ContainerResourceMonitor {
 		
 	}
 	
-	public void monitor(String containerId) {
+	public void monitor(String containerId, int containerMem) {
 		
 		try {
 			String path = "/tmp/hadoop-root/nm-local-dir/nmPrivate/" + 
@@ -154,7 +154,7 @@ public class ContainerResourceMonitor {
 				double memPercent = 0;
 				try {
 					memUsage = Integer.parseInt(infoArray[5]);
-					memPercent = Double.parseDouble(infoArray[9]);
+					memPercent = (double)memUsage/1024/containerMem*100;
 				} catch (Exception e) {
 					// TODO: handle exception
 					LOG.error("get mem info error", e);
@@ -175,6 +175,8 @@ public class ContainerResourceMonitor {
 					LOG.info("break the while loop after send memory percentage exceeding message");
 					break;
 				}
+				
+				Thread.sleep(2000);
 			}
 
 			pidBr.close();
@@ -193,9 +195,9 @@ public class ContainerResourceMonitor {
 		producer.close();
 	}
 	
-	public void startMonitorThread(String containerId) {
+	public void startMonitorThread(String containerId, int containerMem) {
 		
-		Thread thread = new Thread(new ContainerMonitorRunnable(containerId));
+		Thread thread = new Thread(new ContainerMonitorRunnable(containerId, containerMem));
 		thread.start();
 		
 	}
@@ -203,15 +205,17 @@ public class ContainerResourceMonitor {
 	private class ContainerMonitorRunnable implements Runnable {
 		
 		private String containerId;
+		private int containerMem;
 		
-		public ContainerMonitorRunnable(String containerId) {
+		public ContainerMonitorRunnable(String containerId, int containerMem) {
 			this.containerId = containerId;
+			this.containerMem = containerMem;
 		}
 
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			monitor(containerId);
+			monitor(containerId, containerMem);
 		}
 		
 	}

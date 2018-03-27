@@ -75,8 +75,10 @@ public class ContainerNotification {
 				}
 				if(containerIdJson.getString("node_host").equals(nodeHost)){
 					String containerId = containerIdJson.getString("container_id");
+					String containerMem = containerIdJson.getString("container_memory");
 					LOG.info("start a thread to monitor container " + containerId);
-					monitor.startMonitorThread(containerId);
+					LOG.info("the allocated memory of the container is " + containerMem);
+					monitor.startMonitorThread(containerId, Integer.parseInt(containerMem));
 				}	
 			}
 		}
